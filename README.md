@@ -1,9 +1,7 @@
-linux_proc
-=====
+# linux_proc
 
-An OTP library
+Expose information from Linux /proc pseudo filesystem.
 
-Build
------
+## Build
 
     $ rebar3 compile

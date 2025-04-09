@@ -35,18 +35,19 @@ start_link(Args) ->
 %%% gen_server callbacks
 
 init(Args) ->
-    ClkTck = proplists:get_value(clk_tck, Args, 100),
-
+    % ClkTck = proplists:get_value(clk_tck, Args, 100),
     SendInterval = proplists:get_value(interval, Args, ?DEFAULT_INTERVAL),
     {ok, UpdateTimer} = timer:send_interval(SendInterval, update),
 
     {ok, DataBin} = file:read_file("/proc/stat"),
     {ok, NewData} = parse_data(DataBin),
 
-    {ok,
-     #{update_timer => UpdateTimer,
-       clk_tck => ClkTck,
-       prev_data => NewData}}.
+    State0 =
+        #{update_timer => UpdateTimer,
+          % clk_tck => ClkTck,
+          prev_data => NewData},
+    State = cpu_update(NewData, State0),
+    {ok, State}.
 
 handle_call(cpu_ratios, _From, State) ->
     Reply = {ok, maps:get(cpu, State)},
@@ -59,18 +60,13 @@ handle_cast(Msg, State) ->
     ?LOG_WARNING("Unexpected cast: ~p", [Msg]),
     {noreply, State}.
 
-handle_info(update, State) ->
+handle_info(update, State0) ->
     {ok, DataBin} = file:read_file("/proc/stat"),
     {ok, CurrData} = parse_data(DataBin),
 
-    PrevData = maps:get(prev_data, State),
+    State = cpu_update(CurrData, State0),
 
-    PrevCpu = maps:get(cpu, PrevData, #{}),
-    CurrCpu = maps:get(cpu, CurrData, #{}),
-    Delta = cpu_delta(PrevCpu, CurrCpu),
-    Ratios = cpu_as_ratios(Delta),
-
-    {noreply, maps:merge(State, #{prev_data => CurrData, cpu => Ratios})};
+    {noreply, maps:put(prev_data, CurrData, State)};
 handle_info(Info, State) ->
     ?LOG_WARNING("Unexpected info: ~p", [Info]),
     {noreply, State}.
@@ -84,6 +80,15 @@ code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 %%% Internal functions
+
+cpu_update(CurrData, State) ->
+    PrevData = maps:get(prev_data, State),
+
+    PrevCpu = maps:get(cpu, PrevData, #{}),
+    CurrCpu = maps:get(cpu, CurrData, #{}),
+    Delta = cpu_delta(PrevCpu, CurrCpu),
+    Ratios = cpu_as_ratios(Delta),
+    maps:put(cpu, Ratios, State).
 
 % Calculate difference betwen times in current and previous
 -spec cpu_delta(map(), map()) -> map().
@@ -160,3 +165,7 @@ parse_line(<<"cpu ", Data/binary>>) ->
        guest_nice => GuestNice}};
 parse_line(_) ->
     ok.
+
+% -spec read_file(file:name_all()) -> {ok, binary()} | {error, atom()}.
+% read_file(Path) ->
+%     file:read_file(Path).

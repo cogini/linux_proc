@@ -38,7 +38,6 @@ jobs:
 
       # Force full recompile on builds that are retried.
       - name: Clean deps to avoid flaky incremental builds
-        working-directory: app
         if: github.run_attempt != '1'
         run: rm -rf _build
 

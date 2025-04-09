@@ -8,5 +8,5 @@
   {env, []},
   {modules, []},
   {licenses, ["Apache-2.0"]},
-  {links,[{"Github","https://github.com/cogini/linux_proc"}]},
-  {build_tools,["rebar3"]}]}.
+  {links, [{"Github", "https://github.com/cogini/linux_proc"}]},
+  {build_tools, ["rebar3"]}]}.

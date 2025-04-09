@@ -1,0 +1,52 @@
+---
+name: Test
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        otp: ['24', '25', '26', '27']
+    env:
+      MIX_ENV: test
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Erlang and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          # Could be 'latest'
+          rebar3-version: '3.23.0'
+
+      - name: Retrieve cached deps
+        uses: actions/cache@v4
+        with:
+          path: _build
+          key: ${{ matrix.otp }}-${{ hashFiles('**/rebar.lock') }}
+          restore-keys: ${{ matrix.otp }}-
+
+      # Force full recompile on builds that are retried.
+      - name: Clean deps to avoid flaky incremental builds
+        working-directory: app
+        if: github.run_attempt != '1'
+        run: rm -rf _build
+
+      - name: Check formatting
+        run: rebar3 format -v
+
+      - name: Run Erlang tests
+        run: rebar3 eunit
+
+      - name: Run static code analysis checks
+        run: rebar3 dialyzer

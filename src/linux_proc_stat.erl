@@ -89,19 +89,6 @@ code_change(_OldVsn, State, _Extra) ->
 
 %%% Internal functions
 
-parse_proc_stat(State) ->
-    case file:read_file("/proc/stat") of
-        {ok, Data} ->
-            {ok, NewData} = parse_data(Data),
-
-            PrevData = maps:get(data, State, #{}),
-
-            {ok, maps:put(data, NewData, State)};
-        {error, Reason} ->
-            ?LOG_ERROR("Failed to read /proc/stat: ~p", [Reason]),
-            State
-    end.
-
 % Calculate difference betwen times in current and previous
 -spec cpu_delta(map(), map()) -> map().
 cpu_delta(Prev, Curr) ->

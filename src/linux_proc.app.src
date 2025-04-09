@@ -1,6 +1,6 @@
 {application,
  linux_proc,
- [{description, "An OTP application"},
+ [{description, "Read Linux /proc pseudo filesystem"},
   {vsn, "0.1.0"},
   {registered, []},
   {mod, {linux_proc_app, []}},
@@ -8,4 +8,5 @@
   {env, []},
   {modules, []},
   {licenses, ["Apache-2.0"]},
-  {links, []}]}.
+  {links,[{"Github","https://github.com/cogini/linux_proc"}]},
+  {build_tools,["rebar3"]}]}.

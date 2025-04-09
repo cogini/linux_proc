@@ -20,6 +20,7 @@
 
 %%% API
 
+% @doc Get CPU usage ratios.
 -spec cpu_ratios() -> {ok, map()} | {error, term()}.
 cpu_ratios() ->
     gen_server:call(?SERVER, cpu_ratios, ?CALL_TIMEOUT).

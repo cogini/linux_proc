@@ -25,7 +25,7 @@ jobs:
       - name: Install Erlang and Elixir
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{matrix.otp}}
+          otp-version: ${{ matrix.otp }}
           # Could be 'latest'
           rebar3-version: '3.23.0'
 

@@ -37,7 +37,7 @@ on new batch jobs.
 Since this module is Linux specific, it is not started by default.
 You can conditionally add it to your application's supervision tree based on the OS.
 
-        {unix, linux} = os:type().
+Maybe check for the existence of `/proc/stat` or `{unix, linux} = os:type()`.
 
         %{id: linux_proc_stat, start: {linux_proc_stat, start_link, []}},
 

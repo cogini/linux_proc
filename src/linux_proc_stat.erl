@@ -19,8 +19,6 @@
 -define(DEFAULT_INTERVAL, 1000).
 -define(CALL_TIMEOUT, 1000).
 
--type state() :: #{}.
-
 %%% API
 
 -spec cpu_ratios() -> {ok, map()} | {error, term()}.
@@ -37,7 +35,6 @@ start_link(Args) ->
 
 %%% gen_server callbacks
 
--spec init([proplists:proplist()]) -> {ok, state()}.
 init(Args) ->
     ClkTck = proplists:get_value(clk_tck, Args, 100),
 
@@ -119,9 +116,7 @@ parse_lines(Lines) ->
                        ok ->
                            Acc;
                        {Key, Value} ->
-                           maps:put(Key, Value, Acc);
-                       _ ->
-                           Acc
+                           maps:put(Key, Value, Acc)
                    end
                 end,
                 #{},
@@ -151,7 +146,7 @@ parse_line(<<>>) ->
     ok;
 parse_line(<<"cpu ", Data/binary>>) ->
     FieldsBin = re:split(Data, " ", []),
-    [User, Nice, System, Idle, Iowait, Irq, Softirq, Steal, Guest, GuestNice | Rest] =
+    [User, Nice, System, Idle, Iowait, Irq, Softirq, Steal, Guest, GuestNice | _Rest] =
         [binary_to_integer(X) || X <- FieldsBin, X =/= <<>>],
     {cpu,
      #{user => User,
@@ -166,8 +161,3 @@ parse_line(<<"cpu ", Data/binary>>) ->
        guest_nice => GuestNice}};
 parse_line(_) ->
     ok.
-
-to_float(Value) when is_float(Value) ->
-    Value;
-to_float(Value) when is_integer(Value) ->
-    Value / 1.0.
